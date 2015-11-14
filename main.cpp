@@ -6,7 +6,7 @@ using namespace std;
 
 int main (int argc, const char * argv[]) {
 
-    MYSQL *conn = initial();
+    MYSQL *conn = initialize();
     connect(conn);
 
     login(conn);

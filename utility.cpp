@@ -7,29 +7,37 @@
 
 using namespace std;
 
-MYSQL* initial() {
-    MYSQL *conn;
-    conn = mysql_init(nullptr);
+MYSQL* initialize() {
+    MYSQL *conn = mysql_init(nullptr);
+    if (conn == nullptr) {
+        cout << "Insufficient memory!" << endl;
+        exit(0);
+    }
     return conn;
 }
 
 void connect(MYSQL* conn) {
-    if (mysql_real_connect(conn, "localhost", "root", "12345",
-                           "project3-nudb", 0, 0, 0) == nullptr) {
-        //unable to connect
-        cout << "Connection failed!\n";
+    if (conn == nullptr) {
+        cout << "Null pointer." << endl;
+        exit(0);
     }
-    else {
-        cout << "Connection succeeded!\n";
+    if (mysql_real_connect(conn, "localhost", "root", "12345", "project3-nudb", 0, 0, 0) == nullptr) {
+        cout << "Connection failed!" << endl;  // unable to connect
+    } else {
+        cout << "Connection succeeded!" << endl;
     }
 }
 
 void close(MYSQL* conn) {
+    if (conn == nullptr) {
+        cout << "Null pointer." << endl;
+        exit(0);
+    }
     mysql_close(conn);
 }
 
 void login(MYSQL* conn) {
-    while(true) {
+    while (true) {
         string student_id;
         string password;
         cout << "Username: ";
@@ -42,23 +50,23 @@ void login(MYSQL* conn) {
 
         int status = mysql_query(conn, ("select * from student where id = " + student_id).c_str());
         if (status) {
-            cout << "Could not execute statement(s)";
+            cout << "Could not execute statement(s).";
             mysql_close(conn);
             exit(0);
         }
 
         res_set = mysql_store_result(conn);
-        int numrows = (int) mysql_num_rows(res_set);
+        int num_rows = (int) mysql_num_rows(res_set);
 
-        if (numrows == 0) {
-            cout << "Student doesn't exists!\n";
+        if (num_rows == 0) {
+            cout << "Student doesn't exist!" << endl;
         } else {
             row = mysql_fetch_row(res_set);
             if (row[2] == password) {
-                cout << "Successfully log in!\n";
+                cout << "Successfully log in!" << endl;
                 break;
             } else {
-                cout << "Wrong password:(\n";
+                cout << "Wrong password:(" << endl;
             }
         }
         mysql_free_result(res_set);

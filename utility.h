@@ -7,7 +7,7 @@
 
 #include <mysql.h>
 
-MYSQL* initial();
+MYSQL* initialize();
 void connect(MYSQL* conn);
 void close(MYSQL* conn);
 

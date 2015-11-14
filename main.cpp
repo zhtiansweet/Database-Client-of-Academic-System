@@ -50,4 +50,6 @@ int main (int argc, const char * argv[]) {
 
     mysql_close(conn);
     cout << "Dog Bro";
+
+    cout << "tian ge";
 }

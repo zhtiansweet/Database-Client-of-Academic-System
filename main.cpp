@@ -52,6 +52,5 @@ int main (int argc, const char * argv[]) {
 
     cout << "dog bro" << endl;
 
-    cout << "database" << endl;
-
+    cout << "nothing" << endl;
 }

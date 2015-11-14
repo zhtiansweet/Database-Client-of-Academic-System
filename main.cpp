@@ -51,4 +51,5 @@ int main (int argc, const char * argv[]) {
     mysql_close(conn);
 
     cout << "dog bro" << endl;
+    cout << "silly" << endl;
 }

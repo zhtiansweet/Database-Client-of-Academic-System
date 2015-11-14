@@ -73,3 +73,6 @@ void login(MYSQL* conn) {
     }
 }
 
+void fuck() {
+    cout << "shit";
+}

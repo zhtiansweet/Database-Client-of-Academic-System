@@ -40,7 +40,7 @@ void login(MYSQL* conn) {
     while (true) {
         string student_id;
         string password;
-        cout << "Username: ";
+        cout << "Username: ";  // TODO: 1). int type check; 2). int length check.
         cin >> student_id;
         cout << "Password: ";
         cin >> password;

@@ -4,7 +4,7 @@ using namespace std;
 int main (int argc, const char * argv[]) {
     MYSQL *conn;
     conn = mysql_init(NULL);
-    if (mysql_real_connect(conn, "localhost", "root", "Dianer@646692",
+    if (mysql_real_connect(conn, "localhost", "root", "12345",
                            "project3-nudb", 0, 0, 0) == NULL) {
         //unable to connect
         cout << "Oh Noes!\n";

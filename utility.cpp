@@ -88,7 +88,7 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
 
     cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
 
-    string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName"
+    string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName, transcript.Grade"
                       " from student"
                       " join transcript on student.Id = transcript.StudId"
                       " join uosoffering on transcript.UoSCode = uosoffering.UoSCode and"
@@ -114,7 +114,11 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
         cout << " -------------------------------------------" << endl;
         for (int i=0; i<num_rows; ++i) {
             MYSQL_ROW row = mysql_fetch_row(res_set);
-            cout << row[0] <<  "    " << row[1] << endl;
+            cout << row[0] <<  "    " << row[1];
+            if (row[2] == nullptr) {
+                cout << "    <<< Not Yet Graded >>>";
+            }
+            cout << endl;
         }
         cout << endl;
         //cout << "--------------------------------------------" << endl;
@@ -136,18 +140,23 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
         if (option == 1) {
             // TODO: transcript
         } else if (option == 2) {
-            // TODO: enroll
+            enroll(conn, info);
         } else if (option == 3) {
             // TODO: withdraw
         } else if (option == 4) {
             // TODO: personal details
         } else if (option == 5) {
             cout << "Bye!" << endl << endl;
+            delete info;  // deallocate the LoginInfo object assigned to current user
             login(conn);
         } else {
             cout << "Invalid option. Please reselect." << endl;
         }
     }
+}
+
+void enroll(MYSQL* conn, LoginInfo* info) {
+
 }
 
 void error(MYSQL* conn) {

@@ -16,5 +16,7 @@ void login(MYSQL* conn);
 
 void student_menu(MYSQL* conn, LoginInfo* info);
 
+void enroll(MYSQL* conn, LoginInfo* info);
+
 void error(MYSQL* conn);
 #endif //DATABASE_UTILITY_H

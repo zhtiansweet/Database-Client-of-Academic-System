@@ -6,6 +6,7 @@
 #define DATABASE_UTILITY_H
 
 #include <mysql.h>
+#include "login_information.h"
 
 MYSQL* initialize();
 void connect(MYSQL* conn);
@@ -13,7 +14,7 @@ void close(MYSQL* conn);
 
 void login(MYSQL* conn);
 
-void student_menu(MYSQL* conn, const std::string& student_id);
+void student_menu(MYSQL* conn, LoginInfo* info);
 
 void error(MYSQL* conn);
 #endif //DATABASE_UTILITY_H

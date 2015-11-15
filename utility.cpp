@@ -3,11 +3,8 @@
 //
 #include <mysql.h>
 #include <iostream>
-#include <string>
-#include <ctime>
 
 #include "utility.h"
-#include "login_information.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
@@ -45,19 +42,13 @@ void close(MYSQL* conn) {
 void login(MYSQL* conn) {
     while (true) {
         string student_id;
-
-        /*
-        LoginInfo* info = new LoginInfo(student_id);
-        cout << info->GetId() << endl << info->GetYear() << endl << info->GetMonth() << endl << info->GetDay() << endl
-        << info->GetDayOfWeek() << endl << info->GetNameOfWeekDay() << endl << info->GetQuarter() << endl;
-        exit(0);*/
-
-
         string password;
         cout << "Username: ";  // TODO: 1). int type check; 2). int length check.
         cin >> student_id;
         cout << "Password: ";
         cin >> password;
+
+        LoginInfo* info = new LoginInfo(student_id);
 
         MYSQL_RES *res_set;
         MYSQL_ROW row;
@@ -75,65 +66,27 @@ void login(MYSQL* conn) {
             row = mysql_fetch_row(res_set);
             if (row[2] == password) {
                 cout << endl << "You are logged in as " <<  student_id << "." << endl;
-                student_menu(conn, student_id);
+                student_menu(conn, info);
                 break;
             } else {
                 cout << "Wrong password:(" << endl;
             }
         }
         mysql_free_result(res_set);
+
+        delete info;
     }
 }
 
-void student_menu(MYSQL* conn, const string& student_id) {
-    time_t theTime = time(nullptr);
-    struct tm* aTime = localtime(&theTime);
-    int day = aTime->tm_mday;
-    int month = aTime->tm_mon + 1;
-    int year = aTime->tm_year + 1900;
-    int day_of_week = aTime->tm_wday;
-    string weekday_name = "";
-    switch (day_of_week) {
-        case 1:
-            weekday_name = "Monday";
-            break;
-        case 2:
-            weekday_name = "Tuesday";
-            break;
-        case 3:
-            weekday_name = "Wednesday";
-            break;
-        case 4:
-            weekday_name = "Thursday";
-            break;
-        case 5:
-            weekday_name = "Friday";
-            break;
-        case 6:
-            weekday_name = "Saturday";
-            break;
-        case 7:
-            weekday_name = "Sunday";
-            break;
-        default:
-            break;
-    }
-    cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
+void student_menu(MYSQL* conn, LoginInfo* info) {
+    int month = info->GetMonth();
+    int day = info->GetDay();
+    int year = info->GetYear();
+    string weekday_name = info->GetNameOfWeekDay();
+    string id = info->GetId();
+    string quarter = info->GetQuarter();
 
-    string quarter_name = "";
-    if (month==10 || month==11 || (month==9 && day>=15)
-        || (month==12 && day<=12)) {  // Q1, fall quarter, Sep.15 -- Dec. 12
-        quarter_name = "Q1";
-    } else if (month==2 || (month==1 && day>=5) || (month==3 && day<=20)) {  // Q2, winter quarter, Jan. 5 -- Mar. 20
-        quarter_name = "Q2";
-    } else if (month==4 || month==5 || (month==3 && day>=30)
-               || (month==6 && day<=19)) {  // Q3, spring quarter, Mar. 30 -- Jun. 19
-        quarter_name = "Q3";
-    } else if (month==7 || (month==6 && day>=22) || (month==8 && day<=15)) {  // Q4, summer quarter, Jun. 22 -- Aug. 15
-        quarter_name = "Q4";
-    } else {
-        quarter_name = "vacation";
-    }
+    cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
 
     string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName"
                       " from student"
@@ -143,9 +96,9 @@ void student_menu(MYSQL* conn, const string& student_id) {
                                               " transcript.Year = uosoffering.Year"
                       " join unitofstudy on transcript.UoSCode = unitofstudy.UoSCode";
                       //" where student.Id = \"%s\" and uosoffering.Year = %d and uosoffering.Semester = \"%s\";";
-    stmt_str += " where student.Id = " + student_id +
+    stmt_str += " where student.Id = " + id +
                 " and uosoffering.Year = " + to_string(year) +
-                " and uosoffering.Semester = \"" + quarter_name + "\";";
+                " and uosoffering.Semester = \"" + quarter + "\";";
 
     if (mysql_query(conn, stmt_str.c_str())) {
         error(conn);

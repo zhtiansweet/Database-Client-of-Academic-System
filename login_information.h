@@ -14,7 +14,7 @@ private:
     int year;
     int month;
     int day;
-    int day_of_week;  // [1, 7]
+    int day_of_week;  // 0 -- Sunday,..., 6 -- Saturday
     string name_of_weekday;
     string quarter;
 

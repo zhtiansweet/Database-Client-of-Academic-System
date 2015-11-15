@@ -48,4 +48,12 @@ LoginInfo::LoginInfo(string new_id) {
     } else {
         quarter = "vacation";
     }
+
+    enrolled = new unordered_set<string>();
+}
+
+
+// LoginInfo destructor
+LoginInfo::~LoginInfo() {
+    delete enrolled;
 }

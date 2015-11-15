@@ -7,6 +7,7 @@
 #include <ctime>
 
 #include "utility.h"
+#include "login_information.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
@@ -44,6 +45,14 @@ void close(MYSQL* conn) {
 void login(MYSQL* conn) {
     while (true) {
         string student_id;
+
+        /*
+        LoginInfo* info = new LoginInfo(student_id);
+        cout << info->GetId() << endl << info->GetYear() << endl << info->GetMonth() << endl << info->GetDay() << endl
+        << info->GetDayOfWeek() << endl << info->GetNameOfWeekDay() << endl << info->GetQuarter() << endl;
+        exit(0);*/
+
+
         string password;
         cout << "Username: ";  // TODO: 1). int type check; 2). int length check.
         cin >> student_id;

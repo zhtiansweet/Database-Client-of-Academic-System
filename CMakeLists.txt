@@ -7,5 +7,5 @@ include_directories(/usr/local/mysql/include)
 link_directories(/usr/local/mysql/lib)
 link_libraries(libmysqlclient.18.dylib)
 
-set(SOURCE_FILES main.cpp utility.cpp utility.h)
+set(SOURCE_FILES main.cpp utility.cpp utility.h login_information.cpp login_information.h)
 add_executable(database ${SOURCE_FILES})

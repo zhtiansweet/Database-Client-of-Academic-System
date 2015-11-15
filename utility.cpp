@@ -180,6 +180,7 @@ void student_menu(MYSQL* conn, const string& student_id) {
         } else if (option == 4) {
             // TODO: personal details
         } else if (option == 5) {
+            cout << "Bye!" << endl << endl;
             login(conn);
         } else {
             cout << "Invalid option. Please reselect." << endl;

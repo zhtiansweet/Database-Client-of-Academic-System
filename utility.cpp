@@ -187,6 +187,8 @@ void enroll(MYSQL* conn, LoginInfo* info) {
     }
     mysql_free_result(res_set);
 
+    
+
 }
 
 void error(MYSQL* conn) {

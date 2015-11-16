@@ -83,8 +83,10 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
     int day = info->GetDay();
     int year = info->GetYear();
     string weekday_name = info->GetNameOfWeekDay();
+
     string id = info->GetId();
-    string quarter = info->GetQuarter();
+    int school_year = info->GetCurrentQuarterPtr()->GetQuarter_SchoolYear();
+    string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
 
     cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
 
@@ -97,7 +99,7 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
                       " join unitofstudy on transcript.UoSCode = unitofstudy.UoSCode";
                       //" where student.Id = \"%s\" and uosoffering.Year = %d and uosoffering.Semester = \"%s\";";
     stmt_str += " where student.Id = " + id +
-                " and uosoffering.Year = " + to_string(year) +
+                " and uosoffering.Year = " + to_string(school_year) +
                 " and uosoffering.Semester = \"" + quarter + "\";";
 
     if (mysql_query(conn, stmt_str.c_str())) {
@@ -156,7 +158,11 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
 }
 
 void enroll(MYSQL* conn, LoginInfo* info) {
-
+    int yyyy = info->GetYear();
+    //string quarter = info->GetQuarter();
+    //string next_quarter = info->GetNextQuarter();
+    //string stmt =
+    //if (mysql_query(conn, "CALL candidate_course"))
 }
 
 void error(MYSQL* conn) {

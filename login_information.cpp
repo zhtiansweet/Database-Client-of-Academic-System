@@ -34,20 +34,8 @@ LoginInfo::LoginInfo(string new_id) {
         name_of_weekday = "Invalid";
     }
 
-
-    if (month==10 || month==11 || (month==9 && day>=15)
-        || (month==12 && day<=12)) {  // Q1, fall quarter, Sep.15 -- Dec. 12
-        quarter = "Q1";
-    } else if (month==2 || (month==1 && day>=5) || (month==3 && day<=20)) {  // Q2, winter quarter, Jan. 5 -- Mar. 20
-        quarter = "Q2";
-    } else if (month==4 || month==5 || (month==3 && day>=30)
-               || (month==6 && day<=19)) {  // Q3, spring quarter, Mar. 30 -- Jun. 19
-        quarter = "Q3";
-    } else if (month==7 || (month==6 && day>=22) || (month==8 && day<=15)) {  // Q4, summer quarter, Jun. 22 -- Aug. 15
-        quarter = "Q4";
-    } else {
-        quarter = "vacation";
-    }
+    current_quarter = new Quarter(year, month, day);
+    next_quarter = current_quarter->GetNextQuarter();
 
     enrolled = new unordered_set<string>();
 }
@@ -55,5 +43,7 @@ LoginInfo::LoginInfo(string new_id) {
 
 // LoginInfo destructor
 LoginInfo::~LoginInfo() {
+    delete current_quarter;
+    delete next_quarter;
     delete enrolled;
 }

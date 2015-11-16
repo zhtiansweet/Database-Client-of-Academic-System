@@ -37,7 +37,7 @@ LoginInfo::LoginInfo(string new_id) {
     current_quarter = new Quarter(year, month, day);
     next_quarter = current_quarter->GetNextQuarter();
 
-    enrolled = new unordered_set<string>();
+    //enrolled = new unordered_set<string>();
 }
 
 
@@ -45,5 +45,5 @@ LoginInfo::LoginInfo(string new_id) {
 LoginInfo::~LoginInfo() {
     delete current_quarter;
     delete next_quarter;
-    delete enrolled;
+    //delete enrolled;
 }

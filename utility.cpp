@@ -158,6 +158,35 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
 }
 
 void enroll(MYSQL* conn, LoginInfo* info) {
+    string id = info->GetId();
+    int cur_q_year = info->GetCurrentQuarterPtr()->GetQuarter_SchoolYear();
+    string cur_q_name = info->GetCurrentQuarterPtr()->GetQuarter_Name();
+    int next_q_year = info->GetNextQuarterPtr()->GetQuarter_SchoolYear();
+    string next_q_name = info->GetNextQuarterPtr()->GetQuarter_Name();
+    string stmt_str = "CALL candidate_course(" + id + ", " + to_string(cur_q_year) + ", \"" + cur_q_name + "\", " +
+                  to_string(next_q_year) + ", \"" + next_q_name + "\");";
+
+    if (mysql_query(conn, stmt_str.c_str())) {
+        error(conn);
+    }
+
+    MYSQL_RES* res_set = mysql_store_result(conn);
+    int num_rows = (int) mysql_num_rows(res_set);
+    if (num_rows == 0) {
+        cout << "Yeah! You are not eligible to enroll in any course." << endl;
+    } else {
+        cout << " ----------------------------------------------------------" << endl;
+        cout << "| You might be eligible to enroll in the following courses |" << endl;
+        cout << " ----------------------------------------------------------" << endl;
+        for (int i=0; i<num_rows; ++i) {
+            MYSQL_ROW row = mysql_fetch_row(res_set);
+            cout << row[0] <<  "  " << row[2] << "  " << row[3] << "  " << row[1] << endl;
+        }
+        cout << endl;
+        //cout << "--------------------------------------------" << endl;
+    }
+    mysql_free_result(res_set);
+
 }
 
 void error(MYSQL* conn) {

@@ -24,7 +24,7 @@ private:
     Quarter* current_quarter;
     Quarter* next_quarter;
 
-    unordered_set<string>* enrolled;
+    //unordered_set<string>* enrolled;
 
 public:
     LoginInfo (string id);  // the constructor: declaration

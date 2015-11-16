@@ -143,6 +143,7 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
             // TODO: transcript
         } else if (option == 2) {
             enroll(conn, info);
+            break;
         } else if (option == 3) {
             // TODO: withdraw
         } else if (option == 4) {
@@ -187,8 +188,32 @@ void enroll(MYSQL* conn, LoginInfo* info) {
     }
     mysql_free_result(res_set);
 
+    string new_course;
+    int new_course_year;
+    string new_course_quarter;
+    cout << "Please input the course code: ";
+    cin >> new_course;
+    cout << "Please input the year of the new course: ";
+    cin >> new_course_year;
+    cout << "Please input the quarter of the new course: ";
+    cin >> new_course_quarter;
 
-
+    string new_course_begins_on = to_string(new_course_year) + "-";
+    if (new_course_quarter=="Q1" || new_course_quarter=="q1") {
+        new_course_begins_on += "09-15";
+    } else if (new_course_quarter=="Q2" || new_course_quarter=="q2") {
+        new_course_begins_on += "01-05";
+    } else if (new_course_quarter=="Q3" || new_course_quarter=="q3") {
+        new_course_begins_on += "03-30";
+    } else if (new_course_quarter=="Q4" || new_course_quarter=="q4") {
+        new_course_begins_on += "06-22";
+    } else {
+        new_course_begins_on += "12-31";
+    }
+    string stmt_str_1 = "CALL enroll(" + id + ", \"" + new_course + "\", " + to_string(new_course_year) + ", \"" +
+                      new_course_quarter + "\", \"" + new_course_begins_on + "\", " + "@status);";
+    // cout << stmt_str_1 << endl;
+    //std::auto_ptr<sql::Statement>
 }
 
 void error(MYSQL* conn) {

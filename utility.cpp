@@ -158,11 +158,6 @@ void student_menu(MYSQL* conn, LoginInfo* info) {
 }
 
 void enroll(MYSQL* conn, LoginInfo* info) {
-    int yyyy = info->GetYear();
-    //string quarter = info->GetQuarter();
-    //string next_quarter = info->GetNextQuarter();
-    //string stmt =
-    //if (mysql_query(conn, "CALL candidate_course"))
 }
 
 void error(MYSQL* conn) {

@@ -91,7 +91,8 @@ void course_detail(string id, string course) {
     cin >> any;
 }
 
-void transcript(string id) {
+void transcript(LoginInfo* info) {
+    string id = info->GetId();
     while(true) {
         cout << " ----------------------------" << endl;
         cout << "| Your unofficial transcript |" << endl;
@@ -237,7 +238,7 @@ void student_menu(LoginInfo* info) {
         int option = 0;
         cin >> option;  // TODO: type check
         if (option == 1) {
-            transcript(id);
+            transcript(info);
         } else if (option == 2) {
             enroll(info);
         } else if (option == 3) {

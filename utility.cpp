@@ -25,13 +25,8 @@ void connect(MYSQL* conn) {
         exit(0);
     }
     if (mysql_real_connect(conn, "localhost", "root", "12345", "project3-nudb", 0, 0, 0) == nullptr) {
-        cout << "Connection failed!" << endl;  // unable to connect
+        cout << "Connection failed!" << endl;
     }
-    /*
-    else {
-        cout << "Connection succeeded!" << endl;
-    }
-    */
 }
 
 void close(MYSQL* conn) {
@@ -48,6 +43,7 @@ void error(MYSQL* conn) {
     exit(0);
 }
 
+// Connect to MySQL, send query, return result
 MYSQL_RES* send_query(string query) {
     MYSQL* conn = initialize();
     connect(conn);
@@ -60,6 +56,7 @@ MYSQL_RES* send_query(string query) {
     return res_set;
 }
 
+// Triggered in transcript module
 void course_detail(string id, string course) {
     string query = "select uoscode, unitofstudy.uosname, semester, year, enrollment, maxenrollment, faculty.name, grade"
                    " from transcript join uosoffering using (Uoscode, Semester, Year)"

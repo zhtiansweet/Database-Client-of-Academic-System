@@ -177,8 +177,6 @@ void enroll(LoginInfo* info) {
     }
     string stmt_str_1 = "CALL enroll(" + id + ", \"" + new_course + "\", " + to_string(new_course_year) + ", \"" +
                         new_course_quarter + "\", \"" + new_course_begins_on + "\", " + "@status);";
-    // cout << stmt_str_1 << endl;
-    //std::auto_ptr<sql::Statement>
 
 }
 

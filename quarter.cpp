@@ -27,11 +27,15 @@ Quarter::Quarter(int cur_year, int cur_month, int cur_day) {
         quarter_name = "Vacation";
     }
 
+    /*
     if (quarter_id == 1 || quarter_id == 0) {  // Q1 belongs to current school year
         school_year = cur_year;
     } else {
         school_year = cur_year - 1;  // Q2, Q3, Q4 belong to last school year
     }
+    */
+
+    school_year = cur_year;
 }
 
 
@@ -46,7 +50,8 @@ Quarter::Quarter(int schoolyear, int quarterid) {
 
 Quarter* Quarter::GetNextQuarter() {
     int nq_id = (quarter_id % 4) + 1;
-    int nq_school_year = (quarter_id == 4) ? (school_year + 1) : (school_year);
+    // int nq_school_year = (quarter_id == 4) ? (school_year + 1) : (school_year);
+    int nq_school_year = (quarter_id == 1) ? (school_year + 1) : (school_year);
     Quarter* ptr = new Quarter(nq_school_year, nq_id);
     return ptr;
 }

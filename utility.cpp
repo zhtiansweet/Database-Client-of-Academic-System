@@ -137,7 +137,6 @@ void enroll(LoginInfo* info) {
                   to_string(next_q_year) + ", \"" + next_q_name + "\");";
 
     MYSQL_RES* res_set = send_query(stmt_str);
-
     int num_rows = (int) mysql_num_rows(res_set);
     if (num_rows == 0) {
         cout << "Yeah! You are not eligible to enroll in any course." << endl;

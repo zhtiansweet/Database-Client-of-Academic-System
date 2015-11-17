@@ -207,9 +207,9 @@ void enroll(LoginInfo* info) {
                 cout << endl << "You have successfully enrolled in [" << _c_name << "] of year [" <<
                          _c_year << "], quarter [" << _c_quarter << "]." << endl << endl;
             } else {
-                cout << " ----------------------------" << endl;
-                cout << "| Prerequisite(s) of " << _c_name << "|" << endl;
-                cout << " ----------------------------" << endl;
+                cout << " -------------------------------------------------------------------" << endl;
+                cout << "| You have to clear the following prerequisite(s) of " << _c_name << " first |" << endl;
+                cout << " -------------------------------------------------------------------" << endl;
                 for (int i = 0; i < num_rows_1; ++i) {
                     MYSQL_ROW row = mysql_fetch_row(res_set_1);
                     cout << row[0] << "  " << row[1] << endl;

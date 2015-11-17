@@ -240,64 +240,65 @@ void student_menu(LoginInfo* info) {
     int school_year = info->GetCurrentQuarterPtr()->GetQuarter_SchoolYear();
     string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
 
-    while (true) {
-        cout << " --------------" << endl;
-        cout << "| Student Menu |" << endl;
-        cout << " --------------" << endl;
-        cout << "You are logged in as " <<  id << "." << endl;
-        cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
-        string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName, transcript.Grade"
-                " from student"
-                " join transcript on student.Id = transcript.StudId"
-                " join uosoffering on transcript.UoSCode = uosoffering.UoSCode and"
-                " transcript.Semester = uosoffering.Semester and"
-                " transcript.Year = uosoffering.Year"
-                " join unitofstudy on transcript.UoSCode = unitofstudy.UoSCode";
-        //" where student.Id = \"%s\" and uosoffering.Year = %d and uosoffering.Semester = \"%s\";";
-        stmt_str += " where student.Id = " + id +
-                    " and uosoffering.Year = " + to_string(school_year) +
-                    " and uosoffering.Semester = \"" + quarter + "\";";
+    cout << " --------------" << endl;
+    cout << "| Student Menu |" << endl;
+    cout << " --------------" << endl;
+    cout << "You are logged in as " <<  id << "." << endl;
+    cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
+    string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName, transcript.Grade"
+            " from student"
+            " join transcript on student.Id = transcript.StudId"
+            " join uosoffering on transcript.UoSCode = uosoffering.UoSCode and"
+            " transcript.Semester = uosoffering.Semester and"
+            " transcript.Year = uosoffering.Year"
+            " join unitofstudy on transcript.UoSCode = unitofstudy.UoSCode";
+    //" where student.Id = \"%s\" and uosoffering.Year = %d and uosoffering.Semester = \"%s\";";
+    stmt_str += " where student.Id = " + id +
+                " and uosoffering.Year = " + to_string(school_year) +
+                " and uosoffering.Semester = \"" + quarter + "\";";
 
-        MYSQL_RES* res_set = send_query(stmt_str);
-        int num_rows = (int) mysql_num_rows(res_set);
-        if (num_rows == 0) {
-            cout << "Yeah! You are not enrolled in any course!" << endl;
-        } else {
-            cout << " -------------------------------------------" << endl;
-            cout << "| You are enrolled in the following courses |" << endl;
-            cout << " -------------------------------------------" << endl;
-            for (int i=0; i<num_rows; ++i) {
-                MYSQL_ROW row = mysql_fetch_row(res_set);
-                cout << row[0] <<  "    " << row[1];
-                if (row[2] == nullptr) {
-                    cout << "    <<< Not Yet Graded >>>";
-                }
-                cout << endl;
+    MYSQL_RES* res_set = send_query(stmt_str);
+    int num_rows = (int) mysql_num_rows(res_set);
+    if (num_rows == 0) {
+        cout << "Yeah! You are not enrolled in any course!" << endl;
+    } else {
+        cout << " -------------------------------------------" << endl;
+        cout << "| You are enrolled in the following courses |" << endl;
+        cout << " -------------------------------------------" << endl;
+        for (int i=0; i<num_rows; ++i) {
+            MYSQL_ROW row = mysql_fetch_row(res_set);
+            cout << row[0] <<  "    " << row[1];
+            if (row[2] == nullptr) {
+                cout << "    <<< Not Yet Graded >>>";
             }
             cout << endl;
-            //cout << "--------------------------------------------" << endl;
         }
-        mysql_free_result(res_set);
-
-        cout << " -------------------------------------------" << endl;
-        cout << "| You can proceed to the following options  |" << endl;
-        cout << " -------------------------------------------" << endl;
-        cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdrow" << endl
-        << "4. Personal Details" << endl << "5. Logout" << endl;
         cout << endl;
         //cout << "--------------------------------------------" << endl;
+    }
+    mysql_free_result(res_set);
+
+    cout << " -------------------------------------------" << endl;
+    cout << "| You can proceed to the following options  |" << endl;
+    cout << " -------------------------------------------" << endl;
+    cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdrow" << endl
+    << "4. Personal Details" << endl << "5. Logout" << endl;
+    cout << endl;
+    //cout << "--------------------------------------------" << endl;
+
+    while (true) {
         cout << "Please select: ";
-        int option = 0;
-        cin >> option;  // TODO: type check
-        if (option == 1) {
+        string option;
+        cin >> option;
+        if (option == "1") {
             transcript(info);
-        } else if (option == 2) {
+        } else if (option == "2") {
             enroll(info);
-        } else if (option == 3) {
+        } else if (option == "3") {
             // TODO: withdraw
-        } else if (option == 4) {
+        } else if (option == "4") {
             // TODO: personal details
-        } else if (option == 5) {
+        } else if (option == "5") {
             cout << "Bye!" << endl << endl;
             delete info;  // deallocate the LoginInfo object assigned to current user
             login();

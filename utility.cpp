@@ -249,6 +249,10 @@ void enroll(LoginInfo* info) {
     }
 }
 
+void withdraw(LoginInfo* info) {
+
+}
+
 void student_menu(LoginInfo* info) {
     int month = info->GetMonth();
     int day = info->GetDay();
@@ -288,9 +292,11 @@ void student_menu(LoginInfo* info) {
             for (int i=0; i<num_rows; ++i) {
                 MYSQL_ROW row = mysql_fetch_row(res_set);
                 cout << row[0] <<  "    " << row[1];
+                /*
                 if (row[2] == nullptr) {
                     cout << "    <<< Not Yet Graded >>>";
                 }
+                */
                 cout << endl;
             }
             cout << endl;

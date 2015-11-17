@@ -257,12 +257,9 @@ void enroll(LoginInfo* info) {
 
 void withdraw(LoginInfo* info) {
     string id = info->GetId();
-    int school_year = info->GetCurrentQuarterPtr()->GetQuarter_SchoolYear();
-    string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
-
     string query = "select uoscode, semester, year, uosname"
-                   " from transcript join unitofstudy using (uoscode)"
-                   " where StudId = " + id +
+                           " from transcript join unitofstudy using (uoscode)"
+                           " where studid = " + id +
                    " and grade is NULL order by year ASC, semester DESC;";
 
     MYSQL_RES* res_set = send_query(query);
@@ -298,10 +295,41 @@ void withdraw(LoginInfo* info) {
             cout << "COURSE CODE: ";
             cin >> course;
 
-            //string stmt_str_1 = "CALL withdraw();";
-            //send_query(stmt_str_1);
-            cout << endl << "You have successfully withdrawed" << endl << endl;
+            //TODO: set trigger
+            // check whether course code is valid
+            string query1 = "select uoscode, semester, year"
+                            " from transcript join unitofstudy using (uoscode)"
+                            " where studid = " + id +
+                            " and uoscode = \"" + course +
+                            "\" and grade is NULL order by year ASC, semester DESC;";
+            //TODO: duplicate course?
+            MYSQL_RES* res_set1 = send_query(query1);
+            int num_rows1 = (int) mysql_num_rows(res_set1);
+            if (num_rows1 == 0) {
+                cout << "Invalid COURSE CODE!" << endl;
+                continue;
+            }
+            MYSQL_ROW row = mysql_fetch_row(res_set1);
+            string quarter = row[1];
+            string year = row[2];
+            mysql_free_result(res_set1);
 
+            // call procedure to modify transcript table and # enrollment
+            string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\");";
+
+            MYSQL* conn = initialize();
+            connect(conn);
+            if (mysql_query(conn, query2.c_str())) {
+                error(conn);
+            }
+            string trigger = mysql_sqlstate(conn);
+            if(trigger == "01000") {
+                cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
+                cout << endl;
+            }
+
+            cout << endl << "You have successfully withdrawed " << course << endl << endl;
+            close(conn);
             cin.get();
             while (true) {
                 cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;

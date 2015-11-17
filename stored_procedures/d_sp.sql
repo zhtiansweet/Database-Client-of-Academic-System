@@ -28,17 +28,28 @@ CREATE PROCEDURE enroll (IN id INT(11),
 						 IN uos_begin DATE)
 
 BEGIN
-	IF EXISTS (SELECT PrereqUoSCode, UoSName FROM requires
+	IF	EXISTS (SELECT PrereqUoSCode, UoSName FROM requires
+			    INNER JOIN unitofstudy ON PrereqUoSCode = unitofstudy.UoSCode
+			    WHERE requires.UoSCode = uos_code AND PrereqUoSCode NOT IN (SELECT UoSCode FROM transcript WHERE StudId = id)
+			    AND EnforcedSince < uos_begin)
+		OR
+		EXISTS (SELECT PrereqUoSCode, UoSName FROM requires
 			   LEFT JOIN transcript ON requires.PrereqUoSCode = transcript.UoSCode
 			   LEFT JOIN unitofstudy ON requires.PrereqUoSCode = unitofstudy.UoSCode
-			   WHERE (requires.UoSCode = uos_code AND studid IS NULL AND EnforcedSince < uos_begin) OR
-			   (requires.UoSCode = uos_code AND studid = id AND EnforcedSince < uos_begin AND (Grade IS NULL OR Grade = "F")))
+			   WHERE (requires.UoSCode = uos_code AND studid = id AND EnforcedSince < uos_begin AND (Grade IS NULL OR Grade = "F")))
 		THEN
+			SELECT PrereqUoSCode, UoSName FROM requires
+			INNER JOIN unitofstudy ON PrereqUoSCode = unitofstudy.UoSCode
+			WHERE requires.UoSCode = uos_code AND PrereqUoSCode NOT IN (SELECT UoSCode FROM transcript WHERE StudId = id)
+			AND EnforcedSince < uos_begin
+
+			UNION
+
 			SELECT PrereqUoSCode, UoSName FROM requires
 			LEFT JOIN transcript ON requires.PrereqUoSCode = transcript.UoSCode
 			LEFT JOIN unitofstudy ON requires.PrereqUoSCode = unitofstudy.UoSCode
-			WHERE (requires.UoSCode = uos_code AND studid IS NULL AND EnforcedSince < uos_begin) OR
-			(requires.UoSCode = uos_code AND studid = id AND EnforcedSince < uos_begin AND (Grade IS NULL OR Grade = "F"));
+			WHERE (requires.UoSCode = uos_code AND studid = id AND EnforcedSince < uos_begin AND (Grade IS NULL OR Grade = "F"));
+
 	ELSE
 		INSERT INTO transcript VALUES(id, uos_code, uos_q_name, uos_q_year, NULL);
 		UPDATE uosoffering SET Enrollment = Enrollment + 1

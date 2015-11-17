@@ -164,11 +164,11 @@ void enroll(LoginInfo* info) {
         string new_course;
         string new_course_year;
         string new_course_quarter;
-        cout << "Please input the COURSE CODE: ";
+        cout << "COURSE CODE: ";
         cin >> new_course;
-        cout << "Please input the YEAR of the new course: ";
+        cout << "YEAR of the new course: ";
         cin >> new_course_year;
-        cout << "Please input the QUARTER of the new course: ";
+        cout << "QUARTER of the new course: ";
         cin >> new_course_quarter;
 
         string input_combo = new_course + new_course_year + new_course_quarter;

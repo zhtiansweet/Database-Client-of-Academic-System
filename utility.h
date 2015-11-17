@@ -13,6 +13,8 @@ void connect(MYSQL* conn);
 void close(MYSQL* conn);
 */
 void login();
+
+void student_menu(LoginInfo* info);
 /*
 void student_menu(MYSQL* conn, LoginInfo* info);
 

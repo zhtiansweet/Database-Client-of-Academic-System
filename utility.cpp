@@ -26,6 +26,7 @@ void connect(MYSQL* conn) {
     }
     if (mysql_real_connect(conn, "localhost", "root", "12345", "project3-nudb", 0, 0, 0) == nullptr) {
         cout << "Connection failed!" << endl;
+        exit(0);
     }
 }
 
@@ -133,9 +134,11 @@ void enroll(LoginInfo* info) {
     string cur_q_name = info->GetCurrentQuarterPtr()->GetQuarter_Name();
     int next_q_year = info->GetNextQuarterPtr()->GetQuarter_SchoolYear();
     string next_q_name = info->GetNextQuarterPtr()->GetQuarter_Name();
+
+    unordered_set<string> available;
+
     string stmt_str = "CALL candidate_course(" + id + ", " + to_string(cur_q_year) + ", \"" + cur_q_name + "\", " +
                   to_string(next_q_year) + ", \"" + next_q_name + "\");";
-
     MYSQL_RES* res_set = send_query(stmt_str);
     int num_rows = (int) mysql_num_rows(res_set);
     if (num_rows == 0) {
@@ -146,38 +149,85 @@ void enroll(LoginInfo* info) {
         cout << " ----------------------------------------------------------" << endl;
         for (int i=0; i<num_rows; ++i) {
             MYSQL_ROW row = mysql_fetch_row(res_set);
+            string c_name = string(row[0]);
+            string c_year = string(row[2]);
+            string c_qatr = string(row[3]);
+            string combo = c_name + c_year + c_qatr;
+            available.insert(combo);
             cout << row[0] <<  "  " << row[2] << "  " << row[3] << "  " << row[1] << endl;
         }
         cout << endl;
-        //cout << "--------------------------------------------" << endl;
     }
     mysql_free_result(res_set);
 
-    string new_course;
-    int new_course_year;
-    string new_course_quarter;
-    cout << "Please input the course code: ";
-    cin >> new_course;
-    cout << "Please input the year of the new course: ";
-    cin >> new_course_year;
-    cout << "Please input the quarter of the new course: ";
-    cin >> new_course_quarter;
+    while (true) {
+        string new_course;
+        string new_course_year;
+        string new_course_quarter;
+        cout << "Please input the COURSE CODE: ";
+        cin >> new_course;
+        cout << "Please input the YEAR of the new course: ";
+        cin >> new_course_year;
+        cout << "Please input the QUARTER of the new course: ";
+        cin >> new_course_quarter;
 
-    string new_course_begins_on = to_string(new_course_year) + "-";
-    if (new_course_quarter=="Q1" || new_course_quarter=="q1") {
-        new_course_begins_on += "09-15";
-    } else if (new_course_quarter=="Q2" || new_course_quarter=="q2") {
-        new_course_begins_on += "01-05";
-    } else if (new_course_quarter=="Q3" || new_course_quarter=="q3") {
-        new_course_begins_on += "03-30";
-    } else if (new_course_quarter=="Q4" || new_course_quarter=="q4") {
-        new_course_begins_on += "06-22";
-    } else {
-        new_course_begins_on += "12-31";
+        string input_combo = new_course + new_course_year + new_course_quarter;
+        for (int i = 0; i < input_combo.size(); ++i) {  // capitalize input_combo
+            if (input_combo[i] >= 'a' && input_combo[i] <= 'z') {
+                input_combo[i] -= ('a' - 'A');
+            }
+        }
+
+        auto search = available.find(input_combo);
+        if (search == available.end()) {
+            cout << "Invalid combination of COURSE CODE, YEAR and QUARTER. Please re-enter:" << endl;
+        } else {
+            string _c_name = input_combo.substr(0, 8);
+            string _c_year = input_combo.substr(8, 4);
+            string _c_quarter = input_combo.substr(12, 2);
+            string _c_begins_on = _c_year + "-";
+            if (_c_quarter == "Q1") {
+                _c_begins_on += "09-15";
+            } else if (_c_quarter == "Q2") {
+                _c_begins_on += "01-05";
+            } else if (_c_quarter == "Q3") {
+                _c_begins_on += "03-30";
+            } else if (_c_quarter == "Q4") {
+                _c_begins_on += "06-22";
+            } else {
+                _c_begins_on += "12-31";
+            }
+
+            string stmt_str_1 = "CALL enroll(" + id + ", \"" + _c_name + "\", " + _c_year + ", \"" + _c_quarter +
+                                "\", \"" + _c_begins_on + "\");";
+            // cout << stmt_str_1 << endl;
+            MYSQL_RES *res_set_1 = send_query(stmt_str_1);
+            int num_rows_1 = (int) mysql_num_rows(res_set_1);
+            if (num_rows_1 == 0) {
+                cout << endl << "You have successfully enrolled in [" << _c_name << "] of year [" <<
+                         _c_year << "], quarter [" << _c_quarter << "]." << endl << endl;
+            } else {
+                cout << " ----------------------------" << endl;
+                cout << "| Prerequisite(s) of " << _c_name << "|" << endl;
+                cout << " ----------------------------" << endl;
+                for (int i = 0; i < num_rows_1; ++i) {
+                    MYSQL_ROW row = mysql_fetch_row(res_set_1);
+                    cout << row[0] << "  " << row[1] << endl;
+                }
+                cout << endl;
+            }
+            mysql_free_result(res_set_1);
+
+            cin.get();
+            while (true) {
+                cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
+                if (cin.get() == '\n') {
+                    student_menu(info);
+                }
+            }
+
+        }
     }
-    string stmt_str_1 = "CALL enroll(" + id + ", \"" + new_course + "\", " + to_string(new_course_year) + ", \"" +
-                        new_course_quarter + "\", \"" + new_course_begins_on + "\", " + "@status);";
-
 }
 
 void student_menu(LoginInfo* info) {
@@ -191,7 +241,10 @@ void student_menu(LoginInfo* info) {
     string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
 
     while (true) {
-        cout << endl << "You are logged in as " <<  id << "." << endl;
+        cout << " --------------" << endl;
+        cout << "| Student Menu |" << endl;
+        cout << " --------------" << endl;
+        cout << "You are logged in as " <<  id << "." << endl;
         cout << "Today is " << month << "-" << day << "-" << year << ", " << weekday_name << "." << endl << endl;
         string stmt_str = "select unitofstudy.UoSCode, unitofstudy.UoSName, transcript.Grade"
                 " from student"

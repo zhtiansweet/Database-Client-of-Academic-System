@@ -256,7 +256,63 @@ void enroll(LoginInfo* info) {
 }
 
 void withdraw(LoginInfo* info) {
+    string id = info->GetId();
+    int school_year = info->GetCurrentQuarterPtr()->GetQuarter_SchoolYear();
+    string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
 
+    string query = "select uoscode, semester, year, uosname"
+                   " from transcript join unitofstudy using (uoscode)"
+                   " where StudId = " + id +
+                   " and grade is NULL order by year ASC, semester DESC;";
+
+    MYSQL_RES* res_set = send_query(query);
+    int num_rows = (int) mysql_num_rows(res_set);
+    if (num_rows == 0) {
+        cout << "You don't have any course to withdraw!" << endl;
+    } else {
+        cout << " ----------------------------------------------------" << endl;
+        cout << "| You are eligible to withdraw the following courses |" << endl;
+        cout << " ----------------------------------------------------" << endl;
+        for (int i=0; i<num_rows; ++i) {
+            MYSQL_ROW row = mysql_fetch_row(res_set);
+            cout << row[0] <<  " " << row[2] << " " << row[1] << " " << row[3] << endl;
+        }
+        cout << endl;
+    }
+    mysql_free_result(res_set);
+
+    while(true) {
+        cout << " ------------------------------------------" << endl;
+        cout << "| You can proceed to the following options |" << endl;
+        cout << " ------------------------------------------" << endl;
+        cout << "1. Select a course" << endl;
+        cout << "2. Back to Student Menu" << endl;
+        cout << "Please select: ";
+        string option;
+        cin >> option;
+
+        if (option == "2") {
+            return;
+        } else if (option == "1") {
+            string course;
+            cout << "COURSE CODE: ";
+            cin >> course;
+
+            //string stmt_str_1 = "CALL withdraw();";
+            //send_query(stmt_str_1);
+            cout << endl << "You have successfully withdrawed" << endl << endl;
+
+            cin.get();
+            while (true) {
+                cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
+                if (cin.get() == '\n') {
+                    student_menu(info);
+                }
+            }
+        } else {
+            cout << "Invalid option. Please reselect." << endl;
+        }
+    }
 }
 
 void student_menu(LoginInfo* info) {
@@ -292,9 +348,9 @@ void student_menu(LoginInfo* info) {
         if (num_rows == 0) {
             cout << "Yeah! You are not enrolled in any course!" << endl;
         } else {
-            cout << " -------------------------------------------" << endl;
-            cout << "| You are enrolled in the following courses |" << endl;
-            cout << " -------------------------------------------" << endl;
+            cout << " -----------------------------------------------------" << endl;
+            cout << "| You are currently enrolled in the following courses |" << endl;
+            cout << " -----------------------------------------------------" << endl;
             for (int i=0; i<num_rows; ++i) {
                 MYSQL_ROW row = mysql_fetch_row(res_set);
                 cout << row[0] <<  "    " << row[1];
@@ -325,7 +381,7 @@ void student_menu(LoginInfo* info) {
         } else if (option == "2") {
             enroll(info);
         } else if (option == "3") {
-            // TODO: withdraw
+            withdraw(info);
         } else if (option == "4") {
             // TODO: personal details
         } else if (option == "5") {

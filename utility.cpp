@@ -161,71 +161,86 @@ void enroll(LoginInfo* info) {
     mysql_free_result(res_set);
 
     while (true) {
-        string new_course;
-        string new_course_year;
-        string new_course_quarter;
-        cout << "COURSE CODE: ";
-        cin >> new_course;
-        cout << "YEAR of the new course: ";
-        cin >> new_course_year;
-        cout << "QUARTER of the new course: ";
-        cin >> new_course_quarter;
+        cout << " ------------------------------------------" << endl;
+        cout << "| You can proceed to the following options |" << endl;
+        cout << " ------------------------------------------" << endl;
+        cout << "1. Select a course" << endl;
+        cout << "2. Back to Student Menu" << endl;
+        cout << "Please select: ";
+        string option;
+        cin >> option;
+        if (option == "1") {
+            string new_course;
+            string new_course_year;
+            string new_course_quarter;
+            cout << "COURSE CODE: ";
+            cin >> new_course;
+            cout << "YEAR of the new course: ";
+            cin >> new_course_year;
+            cout << "QUARTER of the new course: ";
+            cin >> new_course_quarter;
 
-        string input_combo = new_course + new_course_year + new_course_quarter;
-        for (int i = 0; i < input_combo.size(); ++i) {  // capitalize input_combo
-            if (input_combo[i] >= 'a' && input_combo[i] <= 'z') {
-                input_combo[i] -= ('a' - 'A');
+            string input_combo = new_course + new_course_year + new_course_quarter;
+            for (int i = 0; i < input_combo.size(); ++i) {  // capitalize input_combo
+                if (input_combo[i] >= 'a' && input_combo[i] <= 'z') {
+                    input_combo[i] -= ('a' - 'A');
+                }
             }
-        }
 
-        auto search = available.find(input_combo);
-        if (search == available.end()) {
-            cout << "Invalid combination of COURSE CODE, YEAR and QUARTER. Please re-enter:" << endl;
+            auto search = available.find(input_combo);
+            if (search == available.end()) {
+                cout << endl << "Invalid combination of COURSE CODE, YEAR and QUARTER." << endl << endl;
+            } else {
+                string _c_name = input_combo.substr(0, 8);
+                string _c_year = input_combo.substr(8, 4);
+                string _c_quarter = input_combo.substr(12, 2);
+                string _c_begins_on = _c_year + "-";
+                if (_c_quarter == "Q1") {
+                    _c_begins_on += "09-15";
+                } else if (_c_quarter == "Q2") {
+                    _c_begins_on += "01-05";
+                } else if (_c_quarter == "Q3") {
+                    _c_begins_on += "03-30";
+                } else if (_c_quarter == "Q4") {
+                    _c_begins_on += "06-22";
+                } else {
+                    _c_begins_on += "12-31";
+                }
+
+                string stmt_str_1 = "CALL enroll(" + id + ", \"" + _c_name + "\", " + _c_year + ", \"" + _c_quarter +
+                                    "\", \"" + _c_begins_on + "\");";
+                // cout << stmt_str_1 << endl;
+                MYSQL_RES *res_set_1 = send_query(stmt_str_1);
+                int num_rows_1 = (int) mysql_num_rows(res_set_1);
+                if (num_rows_1 == 0) {
+                    cout << endl << "You have successfully enrolled in [" << _c_name << "] of year [" <<
+                    _c_year << "], quarter [" << _c_quarter << "]." << endl << endl;
+                } else {
+                    cout << endl;
+                    cout << " -------------------------------------------------------------------" << endl;
+                    cout << "| You have to clear the following prerequisite(s) of " << _c_name << " first |" << endl;
+                    cout << " -------------------------------------------------------------------" << endl;
+                    for (int i = 0; i < num_rows_1; ++i) {
+                        MYSQL_ROW row = mysql_fetch_row(res_set_1);
+                        cout << row[0] << "  " << row[1] << endl;
+                    }
+                    cout << endl;
+                }
+                mysql_free_result(res_set_1);
+
+                cin.get();
+                while (true) {
+                    cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
+                    if (cin.get() == '\n') {
+                        student_menu(info);
+                    }
+                }
+
+            }
+        } else if (option == "2") {
+            student_menu(info);
         } else {
-            string _c_name = input_combo.substr(0, 8);
-            string _c_year = input_combo.substr(8, 4);
-            string _c_quarter = input_combo.substr(12, 2);
-            string _c_begins_on = _c_year + "-";
-            if (_c_quarter == "Q1") {
-                _c_begins_on += "09-15";
-            } else if (_c_quarter == "Q2") {
-                _c_begins_on += "01-05";
-            } else if (_c_quarter == "Q3") {
-                _c_begins_on += "03-30";
-            } else if (_c_quarter == "Q4") {
-                _c_begins_on += "06-22";
-            } else {
-                _c_begins_on += "12-31";
-            }
-
-            string stmt_str_1 = "CALL enroll(" + id + ", \"" + _c_name + "\", " + _c_year + ", \"" + _c_quarter +
-                                "\", \"" + _c_begins_on + "\");";
-            // cout << stmt_str_1 << endl;
-            MYSQL_RES *res_set_1 = send_query(stmt_str_1);
-            int num_rows_1 = (int) mysql_num_rows(res_set_1);
-            if (num_rows_1 == 0) {
-                cout << endl << "You have successfully enrolled in [" << _c_name << "] of year [" <<
-                         _c_year << "], quarter [" << _c_quarter << "]." << endl << endl;
-            } else {
-                cout << " -------------------------------------------------------------------" << endl;
-                cout << "| You have to clear the following prerequisite(s) of " << _c_name << " first |" << endl;
-                cout << " -------------------------------------------------------------------" << endl;
-                for (int i = 0; i < num_rows_1; ++i) {
-                    MYSQL_ROW row = mysql_fetch_row(res_set_1);
-                    cout << row[0] << "  " << row[1] << endl;
-                }
-                cout << endl;
-            }
-            mysql_free_result(res_set_1);
-
-            cin.get();
-            while (true) {
-                cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
-                if (cin.get() == '\n') {
-                    student_menu(info);
-                }
-            }
-
+            cout << "Invalid option. Please reselect." << endl;
         }
     }
 }
@@ -278,9 +293,9 @@ void student_menu(LoginInfo* info) {
     }
     mysql_free_result(res_set);
 
-    cout << " -------------------------------------------" << endl;
-    cout << "| You can proceed to the following options  |" << endl;
-    cout << " -------------------------------------------" << endl;
+    cout << " ------------------------------------------" << endl;
+    cout << "| You can proceed to the following options |" << endl;
+    cout << " ------------------------------------------" << endl;
     cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdrow" << endl
     << "4. Personal Details" << endl << "5. Logout" << endl;
     cout << endl;
@@ -326,14 +341,14 @@ void login() {
         int num_rows = (int) mysql_num_rows(res_set);
 
         if (num_rows == 0) {
-            cout << "Student doesn't exist!" << endl;
+            cout << "Student does not exist." << endl;
         } else {
             row = mysql_fetch_row(res_set);
             if (row[2] == password) {
                 student_menu(info);
                 break;
             } else {
-                cout << "Wrong password:(" << endl;
+                cout << "Wrong password." << endl;
             }
         }
         mysql_free_result(res_set);

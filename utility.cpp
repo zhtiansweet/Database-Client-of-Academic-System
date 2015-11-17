@@ -295,7 +295,6 @@ void withdraw(LoginInfo* info) {
             cout << "COURSE CODE: ";
             cin >> course;
 
-            //TODO: set trigger
             // check whether course code is valid
             string query1 = "select uoscode, semester, year"
                             " from transcript join unitofstudy using (uoscode)"
@@ -322,8 +321,8 @@ void withdraw(LoginInfo* info) {
             if (mysql_query(conn, query2.c_str())) {
                 error(conn);
             }
-            string trigger = mysql_sqlstate(conn);
-            if(trigger == "01000") {
+            const char *trigger = mysql_sqlstate(conn);
+            if(trigger == "1000") { //TODO: catch warning thrown by trigger
                 cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
                 cout << endl;
             }

@@ -77,8 +77,8 @@ create trigger enrollment_number
 	after update on uosoffering
     for each row
     begin
-		if (new.enrollment*2 < new.maxenrollment) then
-			SIGNAL sqlstate '01001' set message_text = "111";
+		if (new.enrollment = old.enrollment - 1 and new.enrollment*2 < new.maxenrollment) then
+			SIGNAL sqlstate '01000';
 		end if;
 	end;//
     

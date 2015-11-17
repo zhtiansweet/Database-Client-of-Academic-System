@@ -9,7 +9,9 @@ LoginInfo::LoginInfo(string new_id) {
     id = new_id;
 
     time_t theTime = time(nullptr);
-    struct tm* aTime = localtime(&theTime);
+    struct tm* aTime = localtime(&theTime); /* Points to a static internal std:tm on success, on NULL otherwise.
+The structure may be shared between std::gmtime, std::localtime, and std::ctime, and may be overwritten on each
+invocation. SO DO NOT DEALLOCATE IT MANUALLY! */
 
     day = aTime->tm_mday;
     month = aTime->tm_mon + 1;

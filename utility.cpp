@@ -322,7 +322,8 @@ void withdraw(LoginInfo* info) {
                 error(conn);
             }
             const char *trigger = mysql_sqlstate(conn);
-            if(trigger == "1000") { //TODO: catch warning thrown by trigger
+            string trigger_str = string(trigger);
+            if(trigger_str == "1000") { //TODO: catch warning thrown by trigger
                 cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
                 cout << endl;
             }
@@ -341,6 +342,12 @@ void withdraw(LoginInfo* info) {
         }
     }
 }
+
+
+void personal_details(LoginInfo* info) {
+
+}
+
 
 void student_menu(LoginInfo* info) {
     int month = info->GetMonth();
@@ -430,7 +437,7 @@ void login() {
     while (true) {
         string student_id;
         string password;
-        cout << "Username: ";  // TODO: 1). int type check; 2). int length check.
+        cout << "Username: ";
         cin >> student_id;
         cout << "Password: ";
         cin >> password;

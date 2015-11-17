@@ -103,21 +103,27 @@ void transcript(LoginInfo* info) {
         cout << "| Unofficial Transcript |" << endl;
         cout << " -----------------------" << endl;
 
-        string query = "select * from transcript where StudId = " + id + " order by year, semester;";
+        string query = "select * from transcript where StudId = " + id +
+                        " and grade is not NULL order by year ASC, semester DESC;";
         MYSQL_RES *res_set = send_query(query);
 
         int num_rows = (int) mysql_num_rows(res_set);
         for (int i = 0; i < num_rows; i++) {
             MYSQL_ROW row = mysql_fetch_row(res_set);
-            cout << row[1] << "  " << row[2] << "  " << row[3] << "  ";
-            if (row[4] == nullptr) {
-                cout << "<<< Not Yet Graded >>>" << endl;
-            } else {
-                cout << row[4] << endl;
-            }
+            cout << row[1] << "  " << row[2] << "  " << row[3] << "  " << row[4] << endl;
         }
 
         mysql_free_result(res_set);
+
+        string query1 = "select * from transcript where StudId = " + id +
+                         " and grade is NULL order by year ASC, semester DESC;";
+        MYSQL_RES * res_set1 = send_query(query1);
+        int num_rows1 = (int) mysql_num_rows(res_set1);
+        for (int i = 0; i < num_rows1; i++) {
+            MYSQL_ROW row = mysql_fetch_row(res_set1);
+            cout << row[1] << "  " << row[2] << "  " << row[3] << "  " << "<<< Not Yet Graded >>>" << endl;
+        }
+        mysql_free_result(res_set1);
 
         cout << endl << "Type any course number above to view course details;" << endl;
         cout << "Or type \"0\" to go back to \"Student Menu\"." << endl;
@@ -307,8 +313,8 @@ void student_menu(LoginInfo* info) {
         cout << " ------------------------------------------" << endl;
         cout << "| You can proceed to the following options |" << endl;
         cout << " ------------------------------------------" << endl;
-        cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdrow" << endl
-        << "4. Personal Details" << endl << "5. Logout" << endl;
+        cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdraw" << endl
+        << "4. Personal Details" << endl << "5. Logout" << endl << "6. Exit" << endl;
         cout << endl;
         //cout << "--------------------------------------------" << endl;
         cout << "Please select: ";
@@ -326,6 +332,10 @@ void student_menu(LoginInfo* info) {
             cout << "Bye!" << endl << endl;
             delete info;  // deallocate the LoginInfo object assigned to current user
             login();
+        } else if (option == "6") {
+            cout << "Bye!" << endl;
+            delete info;
+            exit(0);
         } else {
             cout << "Invalid option. Please reselect." << endl;
         }

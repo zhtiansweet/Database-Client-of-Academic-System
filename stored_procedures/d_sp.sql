@@ -12,10 +12,11 @@ BEGIN
     WHERE ((Year = cur_q_year AND Semester = cur_q_name) OR
     	  (Year = next_q_year AND Semester = next_q_name)) AND
           Enrollment < MaxEnrollment AND
-          UoSCode NOT IN
-          (SELECT UoSCode
-           FROM student join transcript ON student.Id = transcript.StudId
-           WHERE Id = id AND (Grade IS NULL OR (Grade <> "F" AND Grade <> "NC")))
+          (UoSCode, Year, Semester) NOT IN
+          (SELECT UoSCode, Year, Semester
+           FROM transcript
+           WHERE StudId = id AND ((Year = cur_q_year AND Semester = cur_q_name) OR
+    	  (Year = next_q_year AND Semester = next_q_name)))
     ORDER BY uosoffering.UoSCode;
 END //
 
@@ -58,28 +59,4 @@ BEGIN
 	END IF;
 END //
 
-drop procedure if exists withdraw; //
-create procedure withdraw (IN id INT(11),
-						 IN uos_code CHAR(8),
-						 IN uos_year INT(11),
-						 IN uos_quarter CHAR(2))
-                         
-begin
-	delete from transcript
-    where studId = id and uoscode = uos_code and year = uos_year and semester = uos_quarter;
-    update uosoffering
-    set enrollment = enrollment - 1
-    where uoscode = uos_code and semester = uos_quarter and year = uos_year;
-end //
-
-drop trigger if exists enrollment_number;//
-create trigger enrollment_number
-	after update on uosoffering
-    for each row
-    begin
-		if (new.enrollment = old.enrollment - 1 and new.enrollment*2 < new.maxenrollment) then
-			SIGNAL sqlstate '01000';
-		end if;
-	end;//
-    
 DELIMITER ;

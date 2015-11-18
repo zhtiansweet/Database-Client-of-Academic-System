@@ -151,6 +151,7 @@ void enroll(LoginInfo* info) {
 
     string stmt_str = "CALL candidate_course(" + id + ", " + to_string(cur_q_year) + ", \"" + cur_q_name + "\", " +
                   to_string(next_q_year) + ", \"" + next_q_name + "\");";
+    // cout << stmt_str << endl;
     MYSQL_RES* res_set = send_query(stmt_str);
     int num_rows = (int) mysql_num_rows(res_set);
     if (num_rows == 0) {

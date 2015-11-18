@@ -3,6 +3,8 @@
 //
 #include <mysql.h>
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 
 #include "utility.h"
 
@@ -301,7 +303,7 @@ void withdraw(LoginInfo* info) {
                             " where studid = " + id +
                             " and uoscode = \"" + course +
                             "\" and grade is NULL order by year ASC, semester DESC;";
-            //TODO: duplicate course?
+            //TODO: duplicate course? i think each course can be uniquely defined by tuple (UoSCode, Year, Quarter).
             MYSQL_RES* res_set1 = send_query(query1);
             int num_rows1 = (int) mysql_num_rows(res_set1);
             if (num_rows1 == 0) {
@@ -345,7 +347,95 @@ void withdraw(LoginInfo* info) {
 
 
 void personal_details(LoginInfo* info) {
+    cout << " --------------------------------------------" << endl;
+    cout << "| Personal Information (ID | Name | Address) |" << endl;
+    cout << " --------------------------------------------" << endl;
+    string id = info->GetId();  // id is guaranteed in the database
+    string stmt_str = "select id, name, address from student where id = " + id + ";";
+    MYSQL_RES* res_set = send_query(stmt_str);
+    int num_rows = (int) mysql_num_rows(res_set);
+    for (int i=0; i<num_rows; ++i) {
+        MYSQL_ROW row = mysql_fetch_row(res_set);
+        cout << row[0] << "  |  " << row[1] << "  |  " << row[2] << endl;
+    }
 
+    while (true) {
+        cout << endl;
+        cout << " ------------------------------------------" << endl;
+        cout << "| You can proceed to the following options |" << endl;
+        cout << " ----------------------------------------- " << endl;
+        cout << "1. Reset password" << endl;
+        cout << "2. Change address" << endl;
+        cout << "3. Back to Student Menu" << endl;
+        cout << "Please select: ";
+        string option;
+        cin >> option;
+        if (option == "1") {
+            cin.get();  // dump the new line feed which follows "1"
+            cout << "Enter new password: ";
+            string pwd0 = get_password();
+            // cout << "-----" << pwd0 << ", the size is " << pwd0.size() << endl;
+            cout << endl << "Confirm new password: ";
+            string pwd1 = get_password();
+            // cout << "+++++" << pwd1 << ", the size is " << pwd1.size() << endl;
+            //cout << (pwd0 == pwd1);
+            if (pwd0 == pwd1) {
+                string stmt_str = "update student set password = \"" + pwd0 + "\" where id = " + id + ";";
+                MYSQL *conn = initialize();
+                connect(conn);
+                mysql_query(conn, stmt_str.c_str());
+                if ((long) mysql_affected_rows(conn) == 1) {
+                    cout << endl << endl << "Password reset succeeded!" << endl;
+                } else {
+                    cout << endl << endl << "Password reset failed!" << endl;
+                }
+                close(conn);
+            } else {
+                cout << endl << endl << "Passwords did not match!" << endl;
+            }
+        } else if (option == "2") {
+            cin.get();  // dump the new line feed which follows "1"
+            cout << "Enter new address: ";
+            char addr_input[60];
+            cin.getline(addr_input, sizeof(addr_input));
+            string addr = string(addr_input);
+            string stmt_str = "update student set address = \"" + addr + "\" where id = " + id + ";";
+            MYSQL *conn = initialize();
+            connect(conn);
+            mysql_query(conn, stmt_str.c_str());
+            if ((long) mysql_affected_rows(conn) == 1) {
+                cout << endl << "Address reset succeeded!" << endl;
+            } else {
+                cout << endl << "Address reset failed!" << endl;
+            }
+            close(conn);
+        } else if (option == "3") {
+            student_menu(info);
+        } else {
+            cout << endl << "Invalid option. Please reselect." << endl;
+        }
+    }
+}
+
+int getch() {
+    struct termios oldt, newt;
+    int ch;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return ch;
+}
+
+string get_password() {
+    string pwd;
+    int c;
+    while ( (c=getch()) != 10 ) {  // new line
+        pwd.push_back(c);
+    }
+    return pwd;
 }
 
 
@@ -360,6 +450,7 @@ void student_menu(LoginInfo* info) {
     string quarter = info->GetCurrentQuarterPtr()->GetQuarter_Name();
 
     while (true) {
+        cout << endl;
         cout << " --------------" << endl;
         cout << "| Student Menu |" << endl;
         cout << " --------------" << endl;
@@ -417,7 +508,7 @@ void student_menu(LoginInfo* info) {
         } else if (option == "3") {
             withdraw(info);
         } else if (option == "4") {
-            // TODO: personal details
+            personal_details(info);
         } else if (option == "5") {
             cout << "Bye!" << endl << endl;
             delete info;  // deallocate the LoginInfo object assigned to current user
@@ -440,7 +531,9 @@ void login() {
         cout << "Username: ";
         cin >> student_id;
         cout << "Password: ";
-        cin >> password;
+        // cin >> password;
+        cin.get();  // dump the new line feed character
+        password = get_password();
 
         LoginInfo* info = new LoginInfo(student_id);
 
@@ -455,9 +548,8 @@ void login() {
             row = mysql_fetch_row(res_set);
             if (row[2] == password) {
                 student_menu(info);
-                break;
             } else {
-                cout << "Wrong password." << endl;
+                cout << "Wrong password" << endl;
             }
         }
         mysql_free_result(res_set);

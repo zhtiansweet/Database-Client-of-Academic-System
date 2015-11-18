@@ -15,6 +15,8 @@ void close(MYSQL* conn);
 void login();
 
 void student_menu(LoginInfo* info);
+
+string get_password();
 /*
 void student_menu(MYSQL* conn, LoginInfo* info);
 

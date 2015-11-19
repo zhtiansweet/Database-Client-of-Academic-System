@@ -52,9 +52,11 @@ BEGIN
 			WHERE (requires.UoSCode = uos_code AND studid = id AND EnforcedSince < uos_begin AND (Grade IS NULL OR Grade = "F"));
 
 	ELSE
+		START TRANSACTION;
 		INSERT INTO transcript VALUES(id, uos_code, uos_q_name, uos_q_year, NULL);
 		UPDATE uosoffering SET Enrollment = Enrollment + 1
 		WHERE UoSCode = uos_code AND Semester = uos_q_name AND Year = uos_q_year;
+		COMMIT;
 		SELECT * FROM uosoffering WHERE Enrollment = -1;
 	END IF;
 END //

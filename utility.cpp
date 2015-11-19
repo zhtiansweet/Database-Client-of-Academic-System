@@ -60,17 +60,25 @@ MYSQL_RES* send_query(string query) {
 }
 
 // Triggered in transcript module
-void course_detail(string id, string course) {
+void course_detail(string id, string course, string year, string quarter) {
     string query = "select uoscode, unitofstudy.uosname, semester, year, enrollment, maxenrollment, faculty.name, grade"
                    " from transcript join uosoffering using (Uoscode, Semester, Year)"
                    " join unitofstudy using (Uoscode)"
                    " join faculty on (instructorid = id)"
-                   " where studid = " + id + " and uoscode = \"" + course +
-                   "\" order by year, semester;";
+                   " where studid = " + id +
+                   " and uoscode = \"" + course +
+                   "\" and year = " + year +
+                   " and semester = \"" + quarter + "\";";
 
     MYSQL_RES *res_set = send_query(query);
 
     int num_rows = (int) mysql_num_rows(res_set);
+/*
+    if(num_rows == 0) {
+        cout << "Invalid combination of COURSE CODE, YEAR and QUARTER." << endl;
+        return;
+    }
+*/
     for(int i = 0; i < num_rows; i++) {
         MYSQL_ROW row = mysql_fetch_row(res_set);
         cout << endl;
@@ -109,10 +117,18 @@ void transcript(LoginInfo* info) {
                         " and grade is not NULL order by year ASC, semester DESC;";
         MYSQL_RES *res_set = send_query(query);
 
+        unordered_set<string> available;
+
         int num_rows = (int) mysql_num_rows(res_set);
         for (int i = 0; i < num_rows; i++) {
             MYSQL_ROW row = mysql_fetch_row(res_set);
-            cout << row[1] << "  " << row[2] << "  " << row[3] << "  " << row[4] << endl;
+            string course = row[1];
+            string quarter = row[2];
+            string year = row[3];
+
+            string combo = course + year + quarter;
+            available.insert(combo);
+            cout << row[1] << "  " << row[3] << "  " << row[2] << "  " << row[4] << endl;
         }
 
         mysql_free_result(res_set);
@@ -123,19 +139,53 @@ void transcript(LoginInfo* info) {
         int num_rows1 = (int) mysql_num_rows(res_set1);
         for (int i = 0; i < num_rows1; i++) {
             MYSQL_ROW row = mysql_fetch_row(res_set1);
-            cout << row[1] << "  " << row[2] << "  " << row[3] << "  " << "<<< Not Yet Graded >>>" << endl;
+            string course = row[1];
+            string quarter = row[2];
+            string year = row[3];
+
+            string combo = course + year + quarter;
+            available.insert(combo);
+            cout << row[1] << "  " << row[3] << "  " << row[2] << "  " << "<<< Not Yet Graded >>>" << endl;
         }
         mysql_free_result(res_set1);
 
-        cout << endl << "Type any course number above to view course details;" << endl;
-        cout << "Or type \"0\" to go back to \"Student Menu\"." << endl;
+        cout << " ------------------------------------------" << endl;
+        cout << "| You can proceed to the following options |" << endl;
+        cout << " ------------------------------------------" << endl;
+        cout << "1. Select a course to see details" << endl;
+        cout << "2. Back to Student Menu" << endl;
+        cout << "Please select: ";
+        string option;
+        cin >> option;
 
-        string course;
-        cin >> course;  //TODO: 1. type check; 2. non-exist course number
-        if (course == "0") {
+        if(option == "2") {
             return;
+        } else if (option == "1") {
+            string course;
+            string year;
+            string quarter;
+            cout << "COURSE CODE: ";
+            cin >> course;
+            cout << "YEAR of the course: ";
+            cin >> year;
+            cout << "QUARTER of the course: ";
+            cin >> quarter;
+
+            string input_combo = course + year + quarter;
+            for (int i = 0; i < input_combo.size(); ++i) {  // capitalize input_combo
+                if (input_combo[i] >= 'a' && input_combo[i] <= 'z') {
+                    input_combo[i] -= ('a' - 'A');
+                }
+            }
+
+            auto search = available.find(input_combo);
+            if (search == available.end()) {
+                cout << endl << "Invalid combination of COURSE CODE, YEAR and QUARTER." << endl << endl;
+            } else {
+                course_detail(id, course, year, quarter);
+            }
         } else {
-            course_detail(id, course);
+            cout << endl << "Invalid option! Please reselect." << endl << endl;
         }
     }
 }
@@ -265,6 +315,7 @@ void withdraw(LoginInfo* info) {
                            " where studid = " + id +
                    " and grade is NULL order by year ASC, semester DESC;";
 
+    unordered_set<string> available;
     MYSQL_RES* res_set = send_query(query);
     int num_rows = (int) mysql_num_rows(res_set);
     if (num_rows == 0) {
@@ -275,6 +326,12 @@ void withdraw(LoginInfo* info) {
         cout << " ----------------------------------------------------" << endl;
         for (int i=0; i<num_rows; ++i) {
             MYSQL_ROW row = mysql_fetch_row(res_set);
+            string course = row[0];
+            string year = row[2];
+            string quarter = row[1];
+
+            string combo = course + year + quarter;
+            available.insert(combo);
             cout << row[0] <<  " " << row[2] << " " << row[1] << " " << row[3] << endl;
         }
         cout << endl;
@@ -295,46 +352,65 @@ void withdraw(LoginInfo* info) {
             return;
         } else if (option == "1") {
             string course;
+            string year;
+            string quarter;
             cout << "COURSE CODE: ";
             cin >> course;
+            cout << "YEAR of the course: ";
+            cin >> year;
+            cout << "QUARTER of the course: ";
+            cin >> quarter;
 
-            // check whether course code is valid
-            string query1 = "select uoscode, semester, year"
-                            " from transcript join unitofstudy using (uoscode)"
-                            " where studid = " + id +
-                            " and uoscode = \"" + course +
-                            "\" and grade is NULL order by year ASC, semester DESC;";
-            //TODO: duplicate course? i think each course can be uniquely defined by tuple (UoSCode, Year, Quarter).
-            MYSQL_RES* res_set1 = send_query(query1);
-            int num_rows1 = (int) mysql_num_rows(res_set1);
-            if (num_rows1 == 0) {
-                cout << "Invalid COURSE CODE!" << endl;
-                continue;
-            }
-            MYSQL_ROW row = mysql_fetch_row(res_set1);
-            string quarter = row[1];
-            string year = row[2];
-            mysql_free_result(res_set1);
-
-            // call procedure to modify transcript table and # enrollment
-            string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\"); ";
-
-            MYSQL_RES* res_set2 = send_query(query2);
-            MYSQL_ROW row1 = mysql_fetch_row(res_set2);
-
-            if(row1[0] != nullptr) {
-                cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
-                cout << endl;
+            string input_combo = course + year + quarter;
+            for (int i = 0; i < input_combo.size(); ++i) {  // capitalize input_combo
+                if (input_combo[i] >= 'a' && input_combo[i] <= 'z') {
+                    input_combo[i] -= ('a' - 'A');
+                }
             }
 
+            auto search = available.find(input_combo);
+            if (search == available.end()) {
+                cout << endl << "Invalid combination of COURSE CODE, YEAR and QUARTER." << endl << endl;
+            } else {
 
-            cout << endl << "You have successfully withdrawed " << course << endl << endl;
+                string query1 = "select uoscode, semester, year"
+                                        " from transcript join unitofstudy using (uoscode)"
+                                        " where studid = " + id +
+                                " and uoscode = \"" + course +
+                                "\" and semester = \"" + quarter +
+                                "\" and year = " + year +
+                                " and grade is NULL order by year ASC, semester DESC;";
 
-            cin.get();
-            while (true) {
-                cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
-                if (cin.get() == '\n') {
-                    student_menu(info);
+                MYSQL_RES *res_set1 = send_query(query1);
+
+                MYSQL_ROW row = mysql_fetch_row(res_set1);
+                course = row[0];
+                quarter = row[1];
+                year = row[2];
+                mysql_free_result(res_set1);
+
+                // call procedure to modify transcript table and # enrollment
+                string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\"); ";
+
+                MYSQL_RES *res_set2 = send_query(query2);
+                MYSQL_ROW row1 = mysql_fetch_row(res_set2);
+
+                if (row1[0] != nullptr) {
+                    cout << endl << "WARNING: # enrollment of " << course <<
+                    " is less than half of its max enrollment.";
+                    cout << endl;
+                }
+
+
+                cout << endl << "You have successfully withdrawn [" << course << "] of [" << year << "], [";
+                cout << quarter << "]." << endl << endl;
+
+                cin.get();
+                while (true) {
+                    cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;
+                    if (cin.get() == '\n') {
+                        student_menu(info);
+                    }
                 }
             }
         } else {
@@ -489,15 +565,9 @@ void student_menu(LoginInfo* info) {
             for (int i=0; i<num_rows; ++i) {
                 MYSQL_ROW row = mysql_fetch_row(res_set);
                 cout << row[0] <<  "    " << row[1];
-                /*
-                if (row[2] == nullptr) {
-                    cout << "    <<< Not Yet Graded >>>";
-                }
-                */
                 cout << endl;
             }
             cout << endl;
-            //cout << "--------------------------------------------" << endl;
         }
         mysql_free_result(res_set);
 
@@ -507,7 +577,6 @@ void student_menu(LoginInfo* info) {
         cout << "1. Transcript" << endl << "2. Enroll" << endl << "3. Withdraw" << endl
         << "4. Personal Details" << endl << "5. Logout" << endl << "6. Exit" << endl;
         cout << endl;
-        //cout << "--------------------------------------------" << endl;
         cout << "Please select: ";
         string option;
         cin >> option;
@@ -533,17 +602,33 @@ void student_menu(LoginInfo* info) {
     }
 }
 
+bool check(string str) {
+    for(int i = 0; i < str.size(); i++) {
+        if(str[i] < '0' || str[i] > '9') {
+            return false;
+        }
+    }
+    return true;
+}
+
 void login() {
 
     while (true) {
-        string student_id;  // TODO: type chek
+        string student_id;
         string password;
         cout << "Username: ";
         cin >> student_id;
+
+        if(!check(student_id)) {
+            cout << "Username should only contain numbers!" << endl << endl;
+            continue;
+        }
+
         cout << "Password: ";
         // cin >> password;
         cin.get();  // dump the new line feed character
         password = get_password();
+
 
         LoginInfo* info = new LoginInfo(student_id);
 

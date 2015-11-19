@@ -4,6 +4,7 @@
 #include <mysql.h>
 #include <iostream>
 #include <termios.h>
+#include <unistd.h>
 
 #include "utility.h"
 

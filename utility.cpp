@@ -317,22 +317,18 @@ void withdraw(LoginInfo* info) {
             mysql_free_result(res_set1);
 
             // call procedure to modify transcript table and # enrollment
-            string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\");";
+            string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\"); ";
 
-            MYSQL* conn = initialize();
-            connect(conn);
-            if (mysql_query(conn, query2.c_str())) {
-                error(conn);
-            }
-            const char *trigger = mysql_sqlstate(conn);
-            string trigger_str = string(trigger);
-            if(trigger_str == "1000") { //TODO: catch warning thrown by trigger
+            MYSQL_ROW row1 = mysql_fetch_row(send_query(query2));
+
+            if(row1[0] != nullptr) {
                 cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
                 cout << endl;
             }
 
+
             cout << endl << "You have successfully withdrawed " << course << endl << endl;
-            close(conn);
+
             cin.get();
             while (true) {
                 cout << "Press ENTER key to go back to \"Student Menu\"..." << endl;

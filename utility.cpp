@@ -319,7 +319,8 @@ void withdraw(LoginInfo* info) {
             // call procedure to modify transcript table and # enrollment
             string query2 = "CALL withdraw(" + id + ", \"" + course + "\", " + year + ", \"" + quarter + "\"); ";
 
-            MYSQL_ROW row1 = mysql_fetch_row(send_query(query2));
+            MYSQL_RES* res_set2 = send_query(query2);
+            MYSQL_ROW row1 = mysql_fetch_row(res_set2);
 
             if(row1[0] != nullptr) {
                 cout << endl << "WARNING: # enrollment of " << course << " is less than half of its max enrollment.";
@@ -406,6 +407,18 @@ void personal_details(LoginInfo* info) {
                 cout << endl << "Address reset failed!" << endl;
             }
             close(conn);
+            cout << " --------------------------------------------" << endl;
+            cout << "| Personal Information (ID | Name | Address) |" << endl;
+            cout << " --------------------------------------------" << endl;
+            //string id = info->GetId();  // id is guaranteed in the database
+            string stmt_str1 = "select id, name, address from student where id = " + id + ";";
+            MYSQL_RES* res_set1 = send_query(stmt_str1);
+            int num_rows1 = (int) mysql_num_rows(res_set1);
+            for (int i=0; i<num_rows1; ++i) {
+                MYSQL_ROW row = mysql_fetch_row(res_set1);
+                cout << row[0] << "  |  " << row[1] << "  |  " << row[2] << endl;
+            }
+            mysql_free_result(res_set1);
         } else if (option == "3") {
             student_menu(info);
         } else {

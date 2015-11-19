@@ -527,7 +527,7 @@ void student_menu(LoginInfo* info) {
 void login() {
 
     while (true) {
-        string student_id;
+        string student_id;  // TODO: type chek
         string password;
         cout << "Username: ";
         cin >> student_id;
